@@ -1,0 +1,54 @@
+﻿# --- Python bytecode/cache ---
+__pycache__/
+*.py[cod]
+*.pyd
+
+# --- Virtual envs ---
+.venv/
+venv/
+env/
+
+# --- IDE/editor cruft ---
+.idea/
+.vscode/
+*.iml
+
+# --- Test/typing/linters ---
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# --- Build/packaging ---
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+*.spec
+
+# --- Logs/temp/cache ---
+*.log
+*.tmp
+*.temp
+.cache/
+
+# --- Project outputs you mentioned ---
+# (generated images, PDFs, and your results CSV)
+*.png
+*.pdf
+results.csv
+
+# OCR scratch patterns (if you ever allow some PNGs, these still ignore the OCR ones)
+*_upper.png
+*_lower.png
+*.pdf_*.png
+*.pdf.txt
+output_*.txt
+
+# --- Local databases (keep a template if you need one) ---
+*.db
+!data_template.db
