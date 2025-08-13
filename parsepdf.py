@@ -107,8 +107,8 @@ def read(pdf_path):
             upper_crop.save(f"{pdf_name}_{i + 1}_upper.png")
             lower_crop.save(f"{pdf_name}_{i + 1}_lower.png")
 
-            result_upper = reader.readtext(np.array(upper_crop))
-            result_lower = reader.readtext(np.array(lower_crop))
+            result_upper = reader.readtext(np.array(upper_crop, dtype=np.uint8))
+            result_lower = reader.readtext(np.array(lower_crop, dtype=np.uint8))
 
             upper_text = "\n".join([f"{text} (Confidence: {prob:.2%})"
                                     for bbox, text, prob in result_upper if prob > 0.2])
