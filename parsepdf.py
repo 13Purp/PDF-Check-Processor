@@ -92,7 +92,7 @@ def read(pdf_path):
         reader = easyocr.Reader(['rs_latin', 'en'])
 
         print(f"Converting {pdf_path} to images...")
-        images = convert_from_path(pdf_path)
+        images = convert_from_path(pdf_path, poppler_path=r'poppler-24.08.0\Library\bin')
         print(f"Found {len(images)} pages.")
 
         full_text = ""
