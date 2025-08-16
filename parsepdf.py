@@ -1,6 +1,7 @@
 import os
 
 import easyocr
+from google.cloud import vision
 from pdf2image import convert_from_path
 import numpy as np
 import re
@@ -127,18 +128,60 @@ def read(pdf_path):
 
     except Exception as e:
         print(f"An error occurred: {e}")
-def parse_from_pdf(pdf_path):
-    output=read(pdf_path)
+def parse_from_pdf(pdf_path, use_google=False):
+    if use_google:
+        output=read_with_google(pdf_path)
+    else:
+        output=read(pdf_path)
+
     pdf_name = os.path.basename(pdf_path)
     final_output=split_and_print(output)
     with open(f'{pdf_name}.txt', 'w', encoding='utf-8') as f:
         f.write(str(output))
     return final_output
+def read_with_google(pdf_path):
+    pdf_name = os.path.basename(pdf_path)
+    client = vision.ImageAnnotatorClient()
+
+    print(f"Converting {pdf_path} to images...")
+    images = convert_from_path(pdf_path)
+    print(f"Found {len(images)} pages.")
+
+    full_text = ""
+    for i, image in enumerate(images):
+        print(f"Reading page {i + 1} (Google Vision)...")
+
+        width, height = image.size
+        upper_crop = image.crop((0, 0, width, height // 3))
+        lower_crop = image.crop((0, 2 * height // 3, width - width / 5, height - height / 15))
+
+        # Save debug images
+        upper_crop.save(f"{pdf_name}_{i + 1}_upper.png")
+        lower_crop.save(f"{pdf_name}_{i + 1}_lower.png")
+
+        # OCR upper
+        with open(f"{pdf_name}_{i + 1}_upper.png", "rb") as img_file:
+            content = img_file.read()
+        response = client.text_detection(image=vision.Image(content=content))
+        upper_text = response.full_text_annotation.text
+
+        # OCR lower
+        with open(f"{pdf_name}_{i + 1}_lower.png", "rb") as img_file:
+            content = img_file.read()
+        response = client.text_detection(image=vision.Image(content=content))
+        lower_text = response.full_text_annotation.text
+
+        full_text += f"--- Page {i + 1} ---\n"
+        full_text += upper_text.strip() + "\n#############\n" + lower_text.strip() + "\n"
+
+    return full_text
 
 if __name__ == '__main__':
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"E:\DevTools\vision-key.json"
+
     pdf_path = 'scanned_document.pdf'
     pdf_name = os.path.basename(pdf_path)
-    output=parse_from_pdf(pdf_path)
+    output=parse_from_pdf(pdf_path, True)
     with open(f'{pdf_name}.txt', 'w', encoding='utf-8') as f:
         f.write(str(output))
 
