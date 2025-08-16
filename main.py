@@ -67,8 +67,8 @@ class CheckProcessorApp(ctk.CTk):
                                                 state="disabled")
         self.process_pdf_button.grid(row=2, column=0, padx=20, pady=10)
         self.process_with_google_button = ctk.CTkButton(self.sidebar_frame, text="Process with Google",
-                                                         command=lambda: self.process_pdf_event(use_google=True),
-                                                         state="disabled")
+                                                        command=lambda: self.process_pdf_event(use_google=True),
+                                                        state="disabled")
         self.process_with_google_button.grid(row=3, column=0, padx=20, pady=10)
         self.status_label = ctk.CTkLabel(self.sidebar_frame, text="Status: Ready", anchor="w")
         self.status_label.grid(row=4, column=0, padx=20, pady=(20, 0))
@@ -92,43 +92,90 @@ class CheckProcessorApp(ctk.CTk):
             self.create_data_card(row, index)
 
     def create_data_card(self, data_row, index):
-        """Creates a single 'card' for one row of data, with all fields being editable."""
-        card_frame = ctk.CTkFrame(self.scrollable_frame, border_width=1, border_color="#565b5e")
-        card_frame.grid(sticky="ew", padx=10, pady=10)
-        card_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        """Creates a single 'card' for one row of data with a more readable layout."""
+        card_frame = ctk.CTkFrame(self.scrollable_frame, border_width=2)
+        card_frame.grid(sticky="ew", padx=10, pady=(5, 15))
+        card_frame.grid_columnconfigure(0, weight=1)
 
+        # --- Card Header ---
         pdf_name = data_row.get("pdf_name", "N/A")
         page_num = data_row.get("page_num", 0)
+        header_text = f"Source: {pdf_name}  |  Page: {page_num}"
+        header_label = ctk.CTkLabel(card_frame, text=header_text, font=ctk.CTkFont(size=16, weight="bold"), anchor="w")
+        header_label.grid(row=0, column=0, padx=15, pady=(10, 5), sticky="ew")
 
-        self.create_entry_field(card_frame, "Source PDF:", pdf_name, index, "pdf_name", 0, 0)
-        self.create_entry_field(card_frame, "Bank Name:", data_row.get("bank_name", ""), index, "bank_name", 0, 1)
-        self.create_entry_field(card_frame, "Platite Račun Br:", data_row.get("platite_racun_br", ""), index, "platite_racun_br", 0, 2)
-        self.create_entry_field(card_frame, "Broj Tekućeg Računa:", data_row.get("broj_tekuceg_racuna", ""), index, "broj_tekuceg_racuna", 1, 0)
-        self.create_entry_field(card_frame, "Serijski Broj:", data_row.get("serijski_broj", ""), index, "serijski_broj", 1, 1)
-        self.create_entry_field(card_frame, "Datum Dospeća:", data_row.get("datum_dospeca", ""), index, "datum_dospeca", 2, 0)
-        self.create_entry_field(card_frame, "Iznos:", data_row.get("iznos", ""), index, "iznos", 2, 1)
-        self.create_entry_field(card_frame, "Radna Jedinica:", data_row.get("radna_jedinica", ""), index, "radna_jedinica", 2, 2)
+        # --- Main content frame with 2 columns ---
+        content_frame = ctk.CTkFrame(card_frame, fg_color="transparent")
+        content_frame.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
+        content_frame.grid_columnconfigure((0, 1), weight=1)
+
+        # --- Left Column: OCR Data ---
+        ocr_frame = ctk.CTkFrame(content_frame)
+        ocr_frame.grid(row=0, column=0, padx=10, pady=5, sticky="nsew")
+        ocr_frame.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(ocr_frame, text="OCR Data", font=ctk.CTkFont(weight="bold")).pack(pady=(5, 10))
+
+        self.create_entry_field(ocr_frame, "Bank Name:", data_row.get("bank_name", ""), index, "bank_name").pack(
+            fill="x", expand=True, padx=10, pady=5)
+        self.create_entry_field(ocr_frame, "Platite Račun Br:", data_row.get("platite_racun_br", ""), index,
+                                "platite_racun_br").pack(fill="x", expand=True, padx=10, pady=5)
+        self.create_entry_field(ocr_frame, "Broj Tekućeg Računa:", data_row.get("broj_tekuceg_racuna", ""), index,
+                                "broj_tekuceg_racuna").pack(fill="x", expand=True, padx=10, pady=5)
+        self.create_entry_field(ocr_frame, "Serijski Broj:", data_row.get("serijski_broj", ""), index,
+                                "serijski_broj").pack(fill="x", expand=True, padx=10, pady=5)
+
+        # --- Right Column: Manual Input & Verification ---
+        right_column_frame = ctk.CTkFrame(content_frame, fg_color="transparent")
+        right_column_frame.grid(row=0, column=1, padx=10, pady=5, sticky="nsew")
+        right_column_frame.grid_columnconfigure(0, weight=1)
+
+        manual_frame = ctk.CTkFrame(right_column_frame)
+        manual_frame.grid(row=0, column=0, sticky="nsew")
+        manual_frame.grid_columnconfigure(0, weight=1)
+        ctk.CTkLabel(manual_frame, text="Manual Input", font=ctk.CTkFont(weight="bold")).pack(pady=(5, 10))
+
+        self.create_entry_field(manual_frame, "Datum Dospeća:", data_row.get("datum_dospeca", ""), index,
+                                "datum_dospeca").pack(fill="x", expand=True, padx=10, pady=5)
+        self.create_entry_field(manual_frame, "Iznos:", data_row.get("iznos", ""), index, "iznos").pack(fill="x",
+                                                                                                        expand=True,
+                                                                                                        padx=10, pady=5)
+        self.create_entry_field(manual_frame, "Radna Jedinica:", data_row.get("radna_jedinica", ""), index,
+                                "radna_jedinica").pack(fill="x", expand=True, padx=10, pady=5)
+
+        # --- Image Buttons ---
+        image_frame = ctk.CTkFrame(right_column_frame)
+        image_frame.grid(row=1, column=0, sticky="nsew", pady=(10, 0))
+        image_frame.grid_columnconfigure((0, 1), weight=1)
+        ctk.CTkLabel(image_frame, text="Image Verification", font=ctk.CTkFont(weight="bold")).grid(row=0, column=0,
+                                                                                                   columnspan=2,
+                                                                                                   pady=(5, 10))
 
         upper_img_path = f"{pdf_name}.pdf_{page_num}_upper.png"
         lower_img_path = f"{pdf_name}.pdf_{page_num}_lower.png"
-        button_frame = ctk.CTkFrame(card_frame)
-        button_frame.grid(row=3, column=0, columnspan=3, padx=10, pady=10, sticky="ew")
-        button_frame.grid_columnconfigure((0, 1), weight=1)
-        upper_button = ctk.CTkButton(button_frame, text="Show Upper Image", command=lambda p=upper_img_path: self.show_image(p))
-        upper_button.grid(row=0, column=0, padx=5, sticky="ew")
-        lower_button = ctk.CTkButton(button_frame, text="Show Lower Image", command=lambda p=lower_img_path: self.show_image(p))
-        lower_button.grid(row=0, column=1, padx=5, sticky="ew")
+        upper_button = ctk.CTkButton(image_frame, text="Show Upper Image",
+                                     command=lambda p=upper_img_path: self.show_image(p))
+        upper_button.grid(row=1, column=0, padx=5, pady=5, sticky="ew")
+        lower_button = ctk.CTkButton(image_frame, text="Show Lower Image",
+                                     command=lambda p=lower_img_path: self.show_image(p))
+        lower_button.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
-    def create_entry_field(self, parent, title, value, index, col_name, row, col):
-        frame = ctk.CTkFrame(parent)
-        frame.grid(row=row, column=col, padx=10, pady=5, sticky="ew")
-        ctk.CTkLabel(frame, text=title, font=ctk.CTkFont(weight="bold")).pack(anchor="w")
-        entry = ctk.CTkEntry(frame, width=200)
+    def create_entry_field(self, parent, title, value, index, col_name):
+        """Creates a self-contained, editable entry field that saves on focus out."""
+        # This frame isolates the label and entry from the parent's layout manager
+        field_frame = ctk.CTkFrame(parent, fg_color="transparent")
+
+        label = ctk.CTkLabel(field_frame, text=title, font=ctk.CTkFont(size=12))
+        label.pack(fill="x", padx=5, pady=(0, 2))
+
+        entry = ctk.CTkEntry(field_frame)
+        entry.pack(fill="x", expand=True, padx=5)
         entry.insert(0, str(value))
-        entry.pack(anchor="w", fill="x")
         entry.bind("<FocusOut>", lambda event, idx=index, name=col_name: self.on_entry_update(event, idx, name))
 
+        return field_frame
+
     def on_entry_update(self, event, row_index, column_name):
+        """Updates the DataFrame and saves to CSV when an entry field loses focus."""
         new_value = event.widget.get()
         self.data_df.loc[row_index, column_name] = new_value
         self.save_current_data_to_csv()
@@ -160,7 +207,8 @@ class CheckProcessorApp(ctk.CTk):
             self.status_label.configure(text=f"Error loading CSV: {e}")
 
     def select_pdf_event(self):
-        self.selected_pdf_path = filedialog.askopenfilename(title="Select a PDF file", filetypes=(("PDF Files", "*.pdf"),))
+        self.selected_pdf_path = filedialog.askopenfilename(title="Select a PDF file",
+                                                            filetypes=(("PDF Files", "*.pdf"),))
         if self.selected_pdf_path:
             self.status_label.configure(text=f"Selected: {os.path.basename(self.selected_pdf_path)}")
             self.process_pdf_button.configure(state="normal")
@@ -188,9 +236,7 @@ class CheckProcessorApp(ctk.CTk):
         This ensures the correct parser is always used.
         """
         try:
-            # --- FIX: This is now the single, correct way to call your logic ---
             extracted_data = parsepdf.parse_from_pdf(self.selected_pdf_path, use_google=use_google)
-            # --------------------------------------------------------------------
             self.after(0, self.update_ui_with_results, extracted_data)
         except Exception as e:
             self.after(0, self.processing_error, e)
